@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FinanceControl.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceControl.Infrastructure.Data;
 
@@ -8,6 +9,10 @@ public class AppDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
