@@ -1,4 +1,6 @@
+using FinanceControl.Domain.Interfaces;
 using FinanceControl.Infrastructure.Data;
+using FinanceControl.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
+// Repository Pattern e Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
