@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using FinanceControl.Application.DTOs.Auth;
 using FinanceControl.Application.Interfaces;
@@ -18,7 +19,7 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public TokenResponseDto GenerateToken(User user)
+    public TokenResponseDto GenerateToken(User user, string refreshToken)
     {
         var secretKey = _configuration["JwtSettings:SecretKey"]!;
         var issuer = _configuration["JwtSettings:Issuer"]!;
@@ -50,9 +51,18 @@ public class TokenService : ITokenService
         return new TokenResponseDto
         {
             AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            RefreshToken = refreshToken,
             ExpiresAt = expiresAt,
             Name = user.Name,
             Email = user.Email
         };
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

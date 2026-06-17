@@ -5,5 +5,6 @@ namespace FinanceControl.Application.Interfaces;
 
 public interface ITokenService
 {
-    TokenResponseDto GenerateToken(User user);
+    TokenResponseDto GenerateToken(User user, string refreshToken);
+    string GenerateRefreshToken();
 }

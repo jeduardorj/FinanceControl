@@ -11,6 +11,7 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository Users { get; }
     public ICategoryRepository Categories { get; }
     public ITransactionRepository Transactions { get; }
+    public IRefreshTokenRepository RefreshTokens { get; }
 
     public UnitOfWork(AppDbContext context)
     {
@@ -18,6 +19,7 @@ public class UnitOfWork : IUnitOfWork
         Users = new UserRepository(context);
         Categories = new CategoryRepository(context);
         Transactions = new TransactionRepository(context);
+        RefreshTokens = new RefreshTokenRepository(context);
     }
 
     public async Task<int> CommitAsync()

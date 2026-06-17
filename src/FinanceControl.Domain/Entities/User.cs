@@ -12,4 +12,5 @@ public class User : BaseEntity
     //Propriedade de navegação
     public ICollection<Category> Categories { get; set; } = new List<Category>();
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
