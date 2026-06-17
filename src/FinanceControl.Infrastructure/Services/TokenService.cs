@@ -1,12 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using FinanceControl.Application.DTOs.Auth;
+using FinanceControl.Application.Interfaces;
+using FinanceControl.Domain.Entities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
-namespace FinanceControl.Infrastructure.Services
+namespace FinanceControl.Infrastructure.Services;
+
+public class TokenService : ITokenService
 {
-    internal class TokenService
+    private readonly IConfiguration _configuration;
+
+    public TokenService(IConfiguration configuration)
     {
+        _configuration = configuration;
+    }
+
+    public TokenResponseDto GenerateToken(User user)
+    {
+        var secretKey = _configuration["JwtSettings:SecretKey"]!;
+        var issuer = _configuration["JwtSettings:Issuer"]!;
+        var audience = _configuration["JwtSettings:Audience"]!;
+        var expirationMinutes = int.Parse(
+            _configuration["JwtSettings:ExpirationMinutes"]!);
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Name, user.Name),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var expiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: expiresAt,
+            signingCredentials: credentials
+        );
+
+        return new TokenResponseDto
+        {
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            ExpiresAt = expiresAt,
+            Name = user.Name,
+            Email = user.Email
+        };
     }
 }

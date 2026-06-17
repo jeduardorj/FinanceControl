@@ -1,9 +1,12 @@
 ﻿using FinanceControl.Application.DTOs.User;
 using FinanceControl.Application.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
 namespace FinanceControl.API.Controllers;
+
+
 
 [ApiController]
 [Route("api/[controller]")]
@@ -39,5 +42,17 @@ public class UsersController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public IActionResult Me()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                  ?? User.FindFirst("sub")?.Value;
+        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                 ?? User.FindFirst("email")?.Value;
+
+        return Ok(new { userId, email, message = "Token válido!" });
     }
 }

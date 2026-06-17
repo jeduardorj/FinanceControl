@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FinanceControl.Application.DTOs.Auth;
 
-namespace FinanceControl.Application.Interfaces
+namespace FinanceControl.Application.Interfaces;
+
+public interface IAuthService
 {
-    internal interface IAuthService
-    {
-    }
+    Task<TokenResponseDto> LoginAsync(LoginDto dto);
 }

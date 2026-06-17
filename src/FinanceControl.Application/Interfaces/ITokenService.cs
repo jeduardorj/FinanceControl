@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FinanceControl.Application.DTOs.Auth;
+using FinanceControl.Domain.Entities;
 
-namespace FinanceControl.Application.Interfaces
+namespace FinanceControl.Application.Interfaces;
+
+public interface ITokenService
 {
-    internal class ITokenService
-    {
-    }
+    TokenResponseDto GenerateToken(User user);
 }
