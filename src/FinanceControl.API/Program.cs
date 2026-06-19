@@ -101,6 +101,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+// Middleware Global de Exceções — deve ser o PRIMEIRO
+app.UseMiddleware<FinanceControl.API.Middlewares.GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

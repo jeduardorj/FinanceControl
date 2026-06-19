@@ -3,10 +3,8 @@ using FinanceControl.Application.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+
 namespace FinanceControl.API.Controllers;
-
-
 
 [ApiController]
 [Route("api/[controller]")]
@@ -29,19 +27,10 @@ public class UsersController : ControllerBase
         var validationResult = await _validator.ValidateAsync(dto);
 
         if (!validationResult.IsValid)
-        {
             return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
-        }
 
-        try
-        {
-            var result = await _userService.RegisterAsync(dto);
-            return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
+        var result = await _userService.RegisterAsync(dto);
+        return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
     }
 
     [HttpGet("me")]

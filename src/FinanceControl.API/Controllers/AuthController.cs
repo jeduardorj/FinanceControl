@@ -29,43 +29,22 @@ public class AuthController : ControllerBase
         if (!validationResult.IsValid)
             return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
 
-        try
-        {
-            var result = await _authService.LoginAsync(dto);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+        var result = await _authService.LoginAsync(dto);
+        return Ok(result);
     }
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
     {
-        try
-        {
-            var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+        var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
+        return Ok(result);
     }
 
     [HttpPost("revoke")]
     [Authorize]
     public async Task<IActionResult> Revoke([FromBody] RefreshTokenDto dto)
     {
-        try
-        {
-            await _authService.RevokeTokenAsync(dto.RefreshToken);
-            return NoContent();
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+        await _authService.RevokeTokenAsync(dto.RefreshToken);
+        return NoContent();
     }
 }
