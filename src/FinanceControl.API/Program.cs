@@ -83,7 +83,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(cfg => { },
-    typeof(FinanceControl.Application.Mappings.UserProfile));
+    typeof(FinanceControl.Application.Mappings.UserProfile),
+    typeof(FinanceControl.Application.Mappings.CategoryProfile));
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<FinanceControl.Application.Validators.CreateUserDtoValidator>();
@@ -91,6 +92,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<FinanceControl.Application.
 // Application Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Infrastructure Services
 builder.Services.AddScoped<ITokenService, TokenService>();
