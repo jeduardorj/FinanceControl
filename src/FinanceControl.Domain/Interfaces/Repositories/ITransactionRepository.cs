@@ -10,4 +10,8 @@ public interface ITransactionRepository : IBaseRepository<Transaction>
         Guid userId,
         DateTime startDate,
         DateTime endDate);
+    Task<IEnumerable<Transaction>> GetByUserIdAndMonthAsync(
+        Guid userId,
+        int year,
+        int month);
 }

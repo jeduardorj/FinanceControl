@@ -95,6 +95,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Infrastructure Services
 builder.Services.AddScoped<ITokenService, TokenService>();

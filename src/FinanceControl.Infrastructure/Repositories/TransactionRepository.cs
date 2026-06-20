@@ -33,4 +33,17 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
             .OrderByDescending(t => t.Date)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Transaction>> GetByUserIdAndMonthAsync(
+        Guid userId,
+        int year,
+        int month)
+    {
+        return await _dbSet
+            .Where(t => t.UserId == userId &&
+                        t.Date.Year == year &&
+                        t.Date.Month == month)
+            .Include(t => t.Category)
+            .ToListAsync();
+    }
 }
