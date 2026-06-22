@@ -5,6 +5,7 @@ using FinanceControl.Domain.Entities;
 using FinanceControl.Domain.Enums;
 using FinanceControl.Domain.Exceptions;
 using FinanceControl.Domain.Interfaces;
+using FinanceControl.Domain.Common;
 
 namespace FinanceControl.Application.Services;
 
@@ -100,4 +101,25 @@ public class TransactionService : ITransactionService
 
         return transaction;
     }
+
+    public async Task<PagedResult<TransactionResponseDto>> GetPagedByUserIdAsync(
+    Guid userId, PaginationParams pagination, TransactionType? type = null)
+    {
+        var pagedTransactions = await _unitOfWork.Transactions
+            .GetPagedByUserIdAsync(userId, pagination);
+
+        var items = pagedTransactions.Items.AsEnumerable();
+
+        if (type.HasValue)
+            items = items.Where(t => t.Type == type.Value);
+
+        var mappedItems = _mapper.Map<IEnumerable<TransactionResponseDto>>(items);
+
+        return PagedResult<TransactionResponseDto>.Create(
+            mappedItems,
+            pagedTransactions.TotalCount,
+            pagedTransactions.PageNumber,
+            pagedTransactions.PageSize);
+    }
+
 }

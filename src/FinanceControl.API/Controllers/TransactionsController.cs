@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using FinanceControl.Domain.Common;
 using FinanceControl.Application.DTOs.Transaction;
 using FinanceControl.Application.Interfaces;
 using FinanceControl.Domain.Enums;
@@ -85,5 +86,25 @@ public class TransactionsController : ControllerBase
         await _transactionService.DeleteAsync(userId, id);
 
         return NoContent();
+    }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] TransactionType? type = null)
+    {
+        var userId = GetUserId();
+
+        var pagination = new PaginationParams
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await _transactionService
+            .GetPagedByUserIdAsync(userId, pagination, type);
+
+        return Ok(result);
     }
 }

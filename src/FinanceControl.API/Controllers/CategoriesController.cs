@@ -4,6 +4,7 @@ using FinanceControl.Application.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FinanceControl.Domain.Common;
 
 namespace FinanceControl.API.Controllers;
 
@@ -86,4 +87,24 @@ public class CategoriesController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        var userId = GetUserId();
+
+        var pagination = new PaginationParams
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await _categoryService
+            .GetPagedByUserIdAsync(userId, pagination);
+
+        return Ok(result);
+    }
+
 }

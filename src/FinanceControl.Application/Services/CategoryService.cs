@@ -4,6 +4,7 @@ using FinanceControl.Application.Interfaces;
 using FinanceControl.Domain.Entities;
 using FinanceControl.Domain.Exceptions;
 using FinanceControl.Domain.Interfaces;
+using FinanceControl.Domain.Common;
 
 namespace FinanceControl.Application.Services;
 
@@ -75,4 +76,22 @@ public class CategoryService : ICategoryService
 
         return category;
     }
+
+    public async Task<PagedResult<CategoryResponseDto>> GetPagedByUserIdAsync(
+    Guid userId, PaginationParams pagination)
+    {
+        var pagedCategories = await _unitOfWork.Categories
+            .GetPagedByUserIdAsync(userId, pagination);
+
+        var mappedItems = _mapper
+            .Map<IEnumerable<CategoryResponseDto>>(pagedCategories.Items);
+
+        return PagedResult<CategoryResponseDto>.Create(
+            mappedItems,
+            pagedCategories.TotalCount,
+            pagedCategories.PageNumber,
+            pagedCategories.PageSize);
+    }
+
+
 }
