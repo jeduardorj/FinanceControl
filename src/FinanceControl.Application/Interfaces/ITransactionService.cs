@@ -1,5 +1,5 @@
-﻿using FinanceControl.Domain.Common;
-using FinanceControl.Application.DTOs.Transaction;
+﻿using FinanceControl.Application.DTOs.Transaction;
+using FinanceControl.Domain.Common;
 using FinanceControl.Domain.Enums;
 
 namespace FinanceControl.Application.Interfaces;
@@ -10,7 +10,9 @@ public interface ITransactionService
     Task<IEnumerable<TransactionResponseDto>> GetAllByUserIdAsync(
         Guid userId, TransactionType? type = null);
     Task<PagedResult<TransactionResponseDto>> GetPagedByUserIdAsync(
-        Guid userId, PaginationParams pagination, TransactionType? type = null);
+        Guid userId,
+        PaginationParams pagination,
+        TransactionFilter? filter = null);
     Task<TransactionResponseDto> GetByIdAsync(Guid userId, Guid transactionId);
     Task<TransactionResponseDto> UpdateAsync(
         Guid userId, Guid transactionId, UpdateTransactionDto dto);

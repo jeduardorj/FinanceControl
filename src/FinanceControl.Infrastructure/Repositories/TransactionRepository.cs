@@ -45,15 +45,49 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
     }
 
     public async Task<PagedResult<Transaction>> GetPagedByUserIdAsync(
-        Guid userId, PaginationParams pagination)
+        Guid userId,
+        PaginationParams pagination,
+        TransactionFilter? filter = null)
     {
+        // IQueryable — query ainda não executada
         var query = _dbSet
             .Where(t => t.UserId == userId)
             .Include(t => t.Category)
-            .OrderByDescending(t => t.Date);
+            .AsQueryable();
 
+        // Aplica filtros condicionalmente — tudo vira SQL
+        if (filter != null)
+        {
+            if (filter.Type.HasValue)
+                query = query.Where(t => t.Type == filter.Type.Value);
+
+            if (filter.StartDate.HasValue)
+                query = query.Where(t => t.Date >= filter.StartDate.Value);
+
+            if (filter.EndDate.HasValue)
+                query = query.Where(t => t.Date <= filter.EndDate.Value);
+
+            if (filter.CategoryId.HasValue)
+                query = query.Where(t => t.CategoryId == filter.CategoryId.Value);
+
+            if (filter.MinAmount.HasValue)
+                query = query.Where(t => t.Amount >= filter.MinAmount.Value);
+
+            if (filter.MaxAmount.HasValue)
+                query = query.Where(t => t.Amount <= filter.MaxAmount.Value);
+
+            if (!string.IsNullOrEmpty(filter.Description))
+                query = query.Where(t => t.Description
+                    .Contains(filter.Description));
+        }
+
+        // Ordena
+        query = query.OrderByDescending(t => t.Date);
+
+        // Conta ANTES de paginar — total real com filtros aplicados
         var totalCount = await query.CountAsync();
 
+        // Pagina DEPOIS de filtrar
         var items = await query
             .Skip((pagination.PageNumber - 1) * pagination.PageSize)
             .Take(pagination.PageSize)

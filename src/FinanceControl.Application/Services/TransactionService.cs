@@ -7,6 +7,7 @@ using FinanceControl.Domain.Exceptions;
 using FinanceControl.Domain.Interfaces;
 using FinanceControl.Domain.Common;
 
+
 namespace FinanceControl.Application.Services;
 
 public class TransactionService : ITransactionService
@@ -103,17 +104,15 @@ public class TransactionService : ITransactionService
     }
 
     public async Task<PagedResult<TransactionResponseDto>> GetPagedByUserIdAsync(
-    Guid userId, PaginationParams pagination, TransactionType? type = null)
+      Guid userId,
+      PaginationParams pagination,
+      TransactionFilter? filter = null)
     {
         var pagedTransactions = await _unitOfWork.Transactions
-            .GetPagedByUserIdAsync(userId, pagination);
+            .GetPagedByUserIdAsync(userId, pagination, filter);
 
-        var items = pagedTransactions.Items.AsEnumerable();
-
-        if (type.HasValue)
-            items = items.Where(t => t.Type == type.Value);
-
-        var mappedItems = _mapper.Map<IEnumerable<TransactionResponseDto>>(items);
+        var mappedItems = _mapper
+            .Map<IEnumerable<TransactionResponseDto>>(pagedTransactions.Items);
 
         return PagedResult<TransactionResponseDto>.Create(
             mappedItems,

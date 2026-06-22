@@ -92,7 +92,13 @@ public class TransactionsController : ControllerBase
     public async Task<IActionResult> GetPaged(
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
-    [FromQuery] TransactionType? type = null)
+    [FromQuery] TransactionType? type = null,
+    [FromQuery] DateTime? startDate = null,
+    [FromQuery] DateTime? endDate = null,
+    [FromQuery] Guid? categoryId = null,
+    [FromQuery] decimal? minAmount = null,
+    [FromQuery] decimal? maxAmount = null,
+    [FromQuery] string? description = null)
     {
         var userId = GetUserId();
 
@@ -102,8 +108,19 @@ public class TransactionsController : ControllerBase
             PageSize = pageSize
         };
 
+        var filter = new TransactionFilter
+        {
+            Type = type,
+            StartDate = startDate,
+            EndDate = endDate,
+            CategoryId = categoryId,
+            MinAmount = minAmount,
+            MaxAmount = maxAmount,
+            Description = description
+        };
+
         var result = await _transactionService
-            .GetPagedByUserIdAsync(userId, pagination, type);
+            .GetPagedByUserIdAsync(userId, pagination, filter);
 
         return Ok(result);
     }

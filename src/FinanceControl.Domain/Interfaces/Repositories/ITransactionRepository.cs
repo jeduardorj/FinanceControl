@@ -11,5 +11,7 @@ public interface ITransactionRepository : IBaseRepository<Transaction>
     Task<IEnumerable<Transaction>> GetByUserIdAndMonthAsync(
         Guid userId, int year, int month);
     Task<PagedResult<Transaction>> GetPagedByUserIdAsync(
-        Guid userId, PaginationParams pagination);
+        Guid userId,
+        PaginationParams pagination,
+        TransactionFilter? filter = null);
 }
