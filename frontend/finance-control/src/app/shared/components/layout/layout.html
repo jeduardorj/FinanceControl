@@ -1,0 +1,58 @@
+<div class="app-layout" [class.sidebar-closed]="!isSidebarOpen()">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2 class="brand">💵 Finance</h2>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of menuItems; track item.path) {
+        <a [routerLink]="item.path"
+          routerLinkActive="active"
+          class="nav-item">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>  
+        </a>
+
+
+        
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span>🚪</span>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+
+    <!-- Navbar -->
+    <header class="navbar">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        ☰
+      </button>
+
+      <div class="navbar-right">
+        <div class="user-info">
+          <span class="user-name">
+            {{ authService.currentUser()?.name }}
+          </span>
+          <div class="user-avatar">
+            {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() }}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="content">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>
