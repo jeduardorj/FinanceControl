@@ -1,1 +1,81 @@
-<p>register works!</p>
+<div class="auth-container">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <h1>Finance Control</h1>
+      <p>Crie sua conta gratuitamente</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label for="name">Nome</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Seu nome completo"
+          [class.error]="name?.invalid && name?.touched">
+        @if (name?.invalid && name?.touched) {
+          <span class="error-message">
+            @if (name?.errors?.['required']) { Nome é obrigatório. }
+            @if (name?.errors?.['maxlength']) { Máximo 100 caracteres. }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="seu@email.com"
+          [class.error]="email?.invalid && email?.touched">
+        @if (email?.invalid && email?.touched) {
+          <span class="error-message">
+            @if (email?.errors?.['required']) { E-mail é obrigatório. }
+            @if (email?.errors?.['email']) { E-mail inválido. }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          [class.error]="password?.invalid && password?.touched">
+        @if (password?.invalid && password?.touched) {
+          <span class="error-message">
+            @if (password?.errors?.['required']) { Senha é obrigatória. }
+            @if (password?.errors?.['minlength']) { Mínimo 6 caracteres. }
+          </span>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="alert-error">{{ errorMessage() }}</div>
+      }
+
+      @if (successMessage()) {
+        <div class="alert-success">{{ successMessage() }}</div>
+      }
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="form.invalid || isLoading()">
+        @if (isLoading()) { Cadastrando... } @else { Cadastrar }
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      <p>Já tem conta? <a routerLink="/login">Faça login</a></p>
+    </div>
+
+  </div>
+</div>
