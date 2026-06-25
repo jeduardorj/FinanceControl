@@ -1,1 +1,265 @@
-<p>transactions works!</p>
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Transações</h1>
+      <p class="page-subtitle">Gerencie suas receitas e despesas</p>
+    </div>
+    <button class="btn-primary" (click)="openCreateModal()">
+      + Nova Transação
+    </button>
+  </div>
+
+  <!-- Alertas -->
+  @if (successMessage()) {
+    <div class="alert-success">✅ {{ successMessage() }}</div>
+  }
+  @if (errorMessage() && !isModalOpen()) {
+    <div class="alert-error">❌ {{ errorMessage() }}</div>
+  }
+
+  <!-- Filtros -->
+  <div class="filters-card">
+    <form [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+      <div class="filters-grid">
+
+        <div class="filter-group">
+          <label>Tipo</label>
+          <select formControlName="type">
+            <option [ngValue]="null">Todos</option>
+            <option [ngValue]="1">Receitas</option>
+            <option [ngValue]="2">Despesas</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Data Inicial</label>
+          <input type="date" formControlName="startDate">
+        </div>
+
+        <div class="filter-group">
+          <label>Data Final</label>
+          <input type="date" formControlName="endDate">
+        </div>
+
+        <div class="filter-group">
+          <label>Descrição</label>
+          <input type="text" formControlName="description" placeholder="Buscar...">
+        </div>
+
+      </div>
+
+      <div class="filters-actions">
+        <button type="submit" class="btn-primary">🔍 Filtrar</button>
+        <button type="button" class="btn-secondary" (click)="clearFilter()">
+          Limpar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading() && !pagedResult()) {
+    <div class="loading">Carregando transações...</div>
+  }
+
+  <!-- Tabela -->
+  @if (pagedResult()) {
+    @if (pagedResult()!.items.length === 0) {
+      <div class="empty-state">
+        <p>💰 Nenhuma transação encontrada.</p>
+      </div>
+    } @else {
+      <div class="table-card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of pagedResult()!.items; track transaction.id) {
+              <tr>
+                <td>{{ transaction.description }}</td>
+                <td>
+                  <span class="category-badge"
+                    [style.background]="transaction.categoryColor + '20'"
+                    [style.color]="transaction.categoryColor">
+                    {{ transaction.categoryName }}
+                  </span>
+                </td>
+                <td>{{ transaction.date | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <span class="type-badge"
+                    [class]="getTypeClass(transaction.type)">
+                    {{ getTypeLabel(transaction.type) }}
+                  </span>
+                </td>
+                <td [class]="getTypeClass(transaction.type) + '-value'">
+                  {{ formatCurrency(transaction.amount) }}
+                </td>
+                <td>
+                  <div class="actions">
+                    <button
+                      class="btn-icon btn-edit"
+                      (click)="openEditModal(transaction)"
+                      title="Editar">✏️
+                    </button>
+                    <button
+                      class="btn-icon btn-delete"
+                      (click)="deleteTransaction(transaction.id)"
+                      title="Excluir">🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginação -->
+      @if (pagedResult()!.totalPages > 1) {
+        <div class="pagination">
+          <button
+            class="page-btn"
+            [disabled]="!pagedResult()!.hasPreviousPage"
+            (click)="goToPage(currentPage() - 1)">
+            ← Anterior
+          </button>
+
+          @for (page of pages; track page) {
+            <button
+              class="page-btn"
+              [class.active]="page === currentPage()"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          }
+
+          <button
+            class="page-btn"
+            [disabled]="!pagedResult()!.hasNextPage"
+            (click)="goToPage(currentPage() + 1)">
+            Próximo →
+          </button>
+        </div>
+      }
+
+      <!-- Resumo -->
+      <div class="summary">
+        <span>
+          Mostrando {{ pagedResult()!.items.length }}
+          de {{ pagedResult()!.totalCount }} transações
+        </span>
+      </div>
+
+    }
+  }
+
+</div>
+
+<!-- Modal -->
+@if (isModalOpen()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>{{ isEditing() ? 'Editar Transação' : 'Nova Transação' }}</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <div class="type-selector">
+            <label class="type-option"
+              [class.selected]="form.get('type')?.value == 1">
+              <input type="radio" formControlName="type" [value]="1">
+              💚 Receita
+            </label>
+            <label class="type-option"
+              [class.selected]="form.get('type')?.value == 2">
+              <input type="radio" formControlName="type" [value]="2">
+              ❤️ Despesa
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição</label>
+          <input
+            type="text"
+            formControlName="description"
+            placeholder="Ex: Salário de Junho"
+            [class.error]="description?.invalid && description?.touched">
+          @if (description?.invalid && description?.touched) {
+            <span class="error-message">Descrição é obrigatória.</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input
+              type="number"
+              step="0.01"
+              formControlName="amount"
+              placeholder="0,00"
+              [class.error]="amount?.invalid && amount?.touched">
+            @if (amount?.invalid && amount?.touched) {
+              <span class="error-message">Valor deve ser maior que zero.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Data</label>
+            <input
+              type="date"
+              formControlName="date"
+              [class.error]="date?.invalid && date?.touched">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <select formControlName="categoryId"
+            [class.error]="categoryId?.invalid && categoryId?.touched">
+            <option value="">Selecione uma categoria</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+          @if (categoryId?.invalid && categoryId?.touched) {
+            <span class="error-message">Categoria é obrigatória.</span>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="form.invalid || isLoading()">
+            @if (isLoading()) { Salvando... }
+            @else { {{ isEditing() ? 'Salvar' : 'Criar' }} }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
