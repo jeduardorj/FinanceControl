@@ -1,74 +1,81 @@
-import { Injectable } from '@angular/core';
+import { inject } from '@angular/core';
 import {
-  HttpRequest,
-  HttpHandler,
+  HttpInterceptorFn,
+  HttpErrorResponse,
   HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse
+  HttpRequest,
+  HttpHandlerFn
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject, switchMap, filter, take, catchError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  private isRefreshing = false;
-  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) { }
+export const authInterceptor: HttpInterceptorFn = (
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.authService.getToken();
+  const token = authService.getToken();
 
-    if (token) {
-      request = this.addToken(request, token);
-    }
+    // LOG TEMPORÁRIO
+  console.log('Interceptor executando, token:', token);
+  console.log('URL:', req.url);
 
-    return next.handle(request).pipe(
-      catchError(error => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          return this.handle401Error(request, next);
-        }
-        return throwError(() => error);
-      })
-    );
-  }
-
-  private addToken(request: HttpRequest<any>, token: string): HttpRequest<any> {
-    return request.clone({
+  let authReq = req;
+  if (token) {
+    authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
   }
 
-  private handle401Error(
-    request: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    if (this.isRefreshing) {
-      return this.refreshTokenSubject.pipe(
-        filter(token => token !== null),
-        take(1),
-        switchMap(token => next.handle(this.addToken(request, token!)))
-      );
-    }
+  return next(authReq).pipe(
+    catchError((error: unknown) => {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        return handle401Error(authReq, next, authService, router);
+      }
+      return throwError(() => error);
+    })
+  ) as Observable<HttpEvent<unknown>>;
+};
 
-    this.isRefreshing = true;
-    this.refreshTokenSubject.next(null);
-
-    return this.authService.refreshToken().pipe(
-      switchMap(response => {
-        this.isRefreshing = false;
-        this.refreshTokenSubject.next(response.accessToken);
-        return next.handle(this.addToken(request, response.accessToken));
-      }),
-      catchError(error => {
-        this.isRefreshing = false;
-        this.authService.logout();
-        return throwError(() => error);
-      })
+function handle401Error(
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+  authService: AuthService,
+  router: Router
+): Observable<HttpEvent<unknown>> {
+  if (isRefreshing) {
+    return refreshTokenSubject.pipe(
+      filter(token => token !== null),
+      take(1),
+      switchMap(token =>
+        next(req.clone({
+          setHeaders: { Authorization: `Bearer ${token!}` }
+        }))
+      )
     );
   }
+
+  isRefreshing = true;
+  refreshTokenSubject.next(null);
+
+  return authService.refreshToken().pipe(
+    switchMap(response => {
+      isRefreshing = false;
+      refreshTokenSubject.next(response.accessToken);
+      return next(req.clone({
+        setHeaders: { Authorization: `Bearer ${response.accessToken}` }
+      }));
+    }),
+    catchError(error => {
+      isRefreshing = false;
+      authService.logout();
+      return throwError(() => error);
+    })
+  );
 }
