@@ -1,1 +1,121 @@
-<p>dashboard works!</p>
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      @if (summary()) {
+        <p class="page-subtitle">
+          {{ getMonthName(summary()!.month) }} de {{ summary()!.year }}
+        </p>
+      }
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Carregando dashboard...</p>
+    </div>
+  }
+
+  @if (!isLoading() && summary()) {
+
+    <!-- Cards de Resumo -->
+    <div class="summary-cards">
+
+      <div class="card card-income">
+        <div class="card-icon">💚</div>
+        <div class="card-content">
+          <p class="card-label">Total Receitas</p>
+          <h2 class="card-value income">
+            {{ formatCurrency(summary()!.totalIncome) }}
+          </h2>
+        </div>
+      </div>
+
+      <div class="card card-expense">
+        <div class="card-icon">❤️</div>
+        <div class="card-content">
+          <p class="card-label">Total Despesas</p>
+          <h2 class="card-value expense">
+            {{ formatCurrency(summary()!.totalExpense) }}
+          </h2>
+        </div>
+      </div>
+
+      <div class="card" [class.card-positive]="summary()!.balance >= 0"
+        [class.card-negative]="summary()!.balance < 0">
+        <div class="card-icon">
+          {{ summary()!.balance >= 0 ? '📈' : '📉' }}
+        </div>
+        <div class="card-content">
+          <p class="card-label">Saldo do Mês</p>
+          <h2 class="card-value"
+            [class.income]="summary()!.balance >= 0"
+            [class.expense]="summary()!.balance < 0">
+            {{ formatCurrency(summary()!.balance) }}
+          </h2>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts-grid">
+
+      <!-- Evolução Mensal -->
+      <div class="chart-card chart-large">
+        <h3 class="chart-title">Evolução dos Últimos 6 Meses</h3>
+        <div class="chart-container">
+          <canvas #evolutionChart></canvas>
+        </div>
+      </div>
+
+      <!-- Distribuição por Categoria -->
+      <div class="chart-card">
+        <h3 class="chart-title">Despesas por Categoria</h3>
+        @if (summary()!.categorySummary.length === 0) {
+          <div class="empty-chart">
+            <p>Nenhuma despesa registrada este mês.</p>
+          </div>
+        } @else {
+          <div class="chart-container">
+            <canvas #categoryChart></canvas>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Tabela de Categorias -->
+    @if (summary()!.categorySummary.length > 0) {
+      <div class="category-breakdown">
+        <h3 class="chart-title">Detalhamento por Categoria</h3>
+        <div class="breakdown-list">
+          @for (cat of summary()!.categorySummary; track cat.categoryId) {
+            <div class="breakdown-item">
+              <div class="breakdown-color"
+                [style.background]="cat.categoryColor">
+              </div>
+              <span class="breakdown-name">{{ cat.categoryName }}</span>
+              <div class="breakdown-bar-wrapper">
+                <div class="breakdown-bar"
+                  [style.width]="cat.percentage + '%'"
+                  [style.background]="cat.categoryColor">
+                </div>
+              </div>
+              <span class="breakdown-percentage">{{ cat.percentage }}%</span>
+              <span class="breakdown-value expense">
+                {{ formatCurrency(cat.totalAmount) }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  }
+
+</div>
