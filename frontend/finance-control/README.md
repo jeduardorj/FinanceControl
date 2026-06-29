@@ -1,59 +1,93 @@
-# FinanceControl
+# Finance Control
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.16.
+![Backend CI](https://github.com/jeduardorj/FinanceControl/actions/workflows/backend-ci.yml/badge.svg)
+![Frontend CI](https://github.com/jeduardorj/FinanceControl/actions/workflows/frontend-ci.yml/badge.svg)
 
-## Development server
+Sistema de Controle Financeiro Pessoal desenvolvido com .NET 9 e Angular.
 
-To start a local development server, run:
+## Tecnologias
+
+### Backend
+- .NET 9 / ASP.NET Core Web API
+- Entity Framework Core + SQL Server
+- JWT Authentication + Refresh Token
+- Clean Architecture
+- Repository Pattern + Unit of Work
+- FluentValidation + AutoMapper
+- xUnit + Moq + FluentAssertions
+
+### Frontend
+- Angular 17+ (Standalone Components)
+- Angular Signals
+- Reactive Forms
+- Chart.js
+- Guards e Interceptors
+
+## Arquitetura
+FinanceControl/ # 📦 Raiz do projeto
+│
+├── 📂 src/ # 🧩 Código-fonte principal
+│ │
+│ ├── 🏛️ FinanceControl.Domain/ # Entidades, interfaces e exceções
+│ │
+│ ├── ⚙️ FinanceControl.Application/ # Serviços, DTOs e validações
+│ │
+│ ├── 🗄️ FinanceControl.Infrastructure/ # EF Core, repositórios e JWT
+│ │
+│ └── 🌐 FinanceControl.API/ # Controllers e middlewares
+│
+├── 🧪 tests/ # ✅ Testes automatizados
+│ │
+│ └── 🔬 FinanceControl.Tests/ # Testes unitários
+│
+└── 🎨 frontend/ # 🖥️ Interface do usuário
+│
+└── 📱 finance-control/ # Aplicação Angular
+
+## Como Executar
+
+### Backend
 
 ```bash
+# Restaurar dependências
+dotnet restore
+
+# Aplicar migrations
+dotnet ef database update --project src/FinanceControl.Infrastructure --startup-project src/FinanceControl.API
+
+# Executar
+dotnet run --project src/FinanceControl.API
+```
+
+### Frontend
+
+```bash
+cd frontend/finance-control
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Testes
 
 ```bash
-ng generate component component-name
+dotnet test
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Endpoints
 
-```bash
-ng generate --help
-```
+| Método | Rota | Descrição | Auth |
+|--------|------|-----------|------|
+| POST | /api/users/register | Cadastro | Não |
+| POST | /api/auth/login | Login | Não |
+| POST | /api/auth/refresh | Refresh Token | Não |
+| POST | /api/auth/revoke | Logout | Sim |
+| GET | /api/categories | Listar categorias | Sim |
+| POST | /api/categories | Criar categoria | Sim |
+| PUT | /api/categories/{id} | Atualizar categoria | Sim |
+| DELETE | /api/categories/{id} | Excluir categoria | Sim |
+| GET | /api/transactions/paged | Listar transações | Sim |
+| POST | /api/transactions | Criar transação | Sim |
+| PUT | /api/transactions/{id} | Atualizar transação | Sim |
+| DELETE | /api/transactions/{id} | Excluir transação | Sim |
+| GET | /api/dashboard | Dashboard financeiro | Sim |
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
